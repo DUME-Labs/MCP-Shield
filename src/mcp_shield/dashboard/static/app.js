@@ -229,6 +229,7 @@ async function loadStatus() {
   document.getElementById("engine-status").textContent = JSON.stringify(s, null, 2);
   const pills = [];
   pills.push(el("span", { class: "pill " + (s.classifier.available ? "good" : "crit") }, s.classifier.available ? "classifier " + s.classifier.version : "classifier unavailable — failing closed"));
+  if (s.classifier.interim) pills.push(el("span", { class: "pill crit" }, "interim classifier — not mcp-shield-clf"));
   if (s.fail_open) pills.push(el("span", { class: "pill crit" }, "FAIL-OPEN (development)"));
   pills.push(el("span", { class: "pill" }, "policy " + s.taint_policy));
   pills.push(el("span", { class: "pill" }, s.frontends.length + " front-ends"));

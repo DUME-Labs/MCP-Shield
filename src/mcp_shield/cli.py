@@ -181,7 +181,13 @@ def cmd_pull_model(args: argparse.Namespace, config: SecurityConfig) -> int:
     if args.model:
         config.classifier_model = args.model
     try:
-        if args.source:
+        if args.interim:
+            target, precision = models.install_interim(config)
+            print(
+                f"interim classifier ({models.INTERIM['repo']}, {precision}) — a stand-in until mcp-shield-clf "
+                "is trained: English only, thresholds not calibrated on MCP traffic"
+            )
+        elif args.source:
             target = models.install_from(Path(args.source), config)
         else:
             target = models.pull(config, allow_unpinned=args.allow_unpinned, include_fp16=args.fp16)
@@ -362,6 +368,11 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("pull-model", help="download and verify the classifier weights")
     s.add_argument("--model", default=None)
     s.add_argument("--from", dest="source", help="install a locally built model directory instead")
+    s.add_argument(
+        "--interim",
+        action="store_true",
+        help="install the interim off-the-shelf classifier until mcp-shield-clf is published",
+    )
     s.add_argument("--allow-unpinned", action="store_true", help="development: accept an unpinned Hub revision")
     s.add_argument("--fp16", action="store_true", help="also fetch the fp16 (GPU) graph")
 

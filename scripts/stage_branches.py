@@ -434,7 +434,7 @@ def front_page(available: set[str]) -> str:
 
 def stage_main() -> Path:
     main = fresh(OUT / "main")
-    for name in ("pyproject.toml", "LICENSE", "NOTICE", ".gitignore"):
+    for name in ("pyproject.toml", "LICENSE", "NOTICE", ".gitignore", "CHECKLIST.md"):
         shutil.copy2(PROJECT / name, main / name)
     for folder in ("src", "training", "scripts"):
         shutil.copytree(PROJECT / folder, main / folder, ignore=SKIP)

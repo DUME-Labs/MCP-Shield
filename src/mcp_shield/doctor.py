@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib.metadata as md
+import json
 import platform
 import shutil
 import statistics
@@ -183,6 +184,12 @@ def run(config: SecurityConfig, *, do_self_test: bool = True) -> Report:
             model_ok = True
             size = sum(p.stat().st_size for p in directory.iterdir() if p.is_file())
             r.ok(f"files verified ({size / 1e6:.0f} MB)")
+            meta = json.loads((directory / "mcp_shield_clf.json").read_text(encoding="utf-8"))
+            if meta.get("interim"):
+                r.warn(
+                    f"INTERIM classifier {meta.get('name')} {meta.get('version')} — a stand-in until mcp-shield-clf "
+                    "is trained: English-only, thresholds not calibrated on MCP traffic"
+                )
     if model_ok and do_self_test and available:
         candidates = [
             [p, "CPUExecutionProvider"]
@@ -194,13 +201,22 @@ def run(config: SecurityConfig, *, do_self_test: bool = True) -> Report:
         for providers in candidates:
             try:
                 res = self_test(directory, providers)
-                results.append(res)
-                r.ok(
-                    f"self-test on {providers[0]}: p50 {res['p50_ms']:.1f} ms, p95 {res['p95_ms']:.1f} ms; "
-                    f"verdicts {res['verdicts']}"
-                )
             except Exception as exc:
                 r.warn(f"self-test on {providers[0]} failed: {exc}")
+                continue
+            actual = res["providers"][0] if res["providers"] else "unknown"
+            if actual != providers[0]:
+                # ONNX Runtime silently falls back to the CPU when an accelerator's libraries are missing
+                r.warn(
+                    f"{providers[0]} is listed but could not be used (ONNX Runtime fell back to {actual}): its "
+                    "runtime libraries are missing, or two ONNX Runtime wheels are installed side by side"
+                )
+                continue
+            results.append(res)
+            r.ok(
+                f"self-test on {actual}: p50 {res['p50_ms']:.1f} ms, p95 {res['p95_ms']:.1f} ms; "
+                f"verdicts {res['verdicts']}"
+            )
         if results:
             best = min(results, key=lambda x: x["p95_ms"])
             models.save_runtime({"providers": best["providers"], "p95_ms": best["p95_ms"], "measured": time.time()})

@@ -388,6 +388,7 @@ class Engine:
                 "name": clf.name,
                 "version": clf.version,
                 "available": not hasattr(clf, "reason"),
+                "interim": bool(getattr(getattr(clf, "meta", None), "interim", False)),
                 "reason": getattr(clf, "reason", None),
                 "providers": getattr(clf, "providers", None),
                 "model_file": getattr(clf, "model_file", None),

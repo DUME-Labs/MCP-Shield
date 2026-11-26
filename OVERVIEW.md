@@ -109,12 +109,18 @@ front-end blocks traffic in both directions (fail closed).
 
 ## Classifier weights
 
-The weights are not in the package. Until a release is pinned in `models.py`, install a
-model you have built:
+The weights are not in the package. Until `mcp-shield-clf` is published, install the
+**interim** classifier — an off-the-shelf prompt-injection model, pinned and self-checked —
+or a model you have built:
 
 ```bash
+mcp-shield pull-model --interim                # ~750 MB download; English only, a stand-in
 mcp-shield pull-model --from path/to/model     # model.onnx, tokenizer.json, mcp_shield_clf.json
 ```
+
+The interim model is labelled as such by `doctor` and the dashboard. It blocks some harmless
+text (quoted injection phrases, credential-looking content) and misses command injection in
+result text; the fine-tuned `mcp-shield-clf` replaces it.
 
 Without a model, the engine fails closed: untrusted content is blocked and tool
 descriptions are withheld. `--fail-open` exists for development only.

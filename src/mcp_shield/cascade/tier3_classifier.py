@@ -130,6 +130,10 @@ class ModelMeta:
     # benign texts can exceed any fixed cosine). Absent → the embedding rule is off.
     embedding_cosine: float | None = None
     embedding_mean: list[float] | None = None
+    # A model trained without MCP-Shield's context prefix (an off-the-shelf classifier) gets the text alone.
+    use_prefix: bool = True
+    # Set for a stand-in model used until mcp-shield-clf is trained; doctor and the dashboard say so.
+    interim: bool = False
 
     @classmethod
     def load(cls, path: Path) -> ModelMeta:
@@ -150,6 +154,8 @@ class ModelMeta:
             if isinstance(emb := data.get("embedding"), dict) and "cosine" in emb
             else None,
             embedding_mean=[float(x) for x in emb["mean"]] if isinstance(emb, dict) and "mean" in emb else None,
+            use_prefix=bool(data.get("use_prefix", True)),
+            interim=bool(data.get("interim", False)),
         )
 
     def table_for(self, fpr_target: float) -> tuple[ThresholdTable, str]:
@@ -250,7 +256,9 @@ class OnnxClassifier:
         self.tokenizer = Tokenizer.from_file(str(tok_path))
         self.tokenizer.no_padding()
         self.tokenizer.enable_truncation(
-            max_length=self.meta.max_length, stride=self.meta.stride, strategy="only_second"
+            max_length=self.meta.max_length,
+            stride=self.meta.stride,
+            strategy="only_second" if self.meta.use_prefix else "longest_first",
         )
         pad_id = self.tokenizer.token_to_id("[PAD]")
         self.pad_id = int(pad_id) if pad_id is not None else 0
@@ -258,7 +266,7 @@ class OnnxClassifier:
         self.batch_size = 16
 
     def encode(self, seg: SegmentInput) -> list[Any]:
-        enc = self.tokenizer.encode(seg.prefix, seg.text)
+        enc = self.tokenizer.encode(seg.prefix, seg.text) if self.meta.use_prefix else self.tokenizer.encode(seg.text)
         return [enc, *enc.overflowing]
 
     def _run(self, encodings: list[Any]) -> tuple[NDArray[Any], NDArray[Any] | None]:
@@ -296,6 +304,10 @@ class OnnxClassifier:
             logits, pooled = self._run(flat)
         except Exception as exc:
             raise ClassifierUnavailable(f"inference failed: {exc}") from exc
+        if logits.shape[-1] != len(self.meta.labels):  # a mismatched model must never be guessed at
+            raise ClassifierUnavailable(
+                f"model returns {logits.shape[-1]} scores but its metadata names {len(self.meta.labels)} labels"
+            )
         probs = softmax(logits, self.meta.temperature)
         verdicts: list[Verdict] = []
         offset = 0
