@@ -1,0 +1,26 @@
+name: check-contributions
+on:
+  pull_request:
+    branches: [dataset]
+  push:
+    branches: [dataset]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: dataset
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: tooling
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install ./tooling
+      - name: Check every contribution file
+        working-directory: tooling/training
+        run: python -m mcp_shield_train contributions check "$GITHUB_WORKSPACE/dataset/contributions"
