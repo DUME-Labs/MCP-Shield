@@ -160,7 +160,7 @@ is [`docs/paper/MCP-Shield IEEE Paper.pdf`](docs/paper/MCP-Shield%20IEEE%20Paper
 ## Development
 
 ```bash
-git clone https://github.com/Dummie-Labs/MCP-Shield.git && cd MCP-Shield
+git clone https://github.com/DUME-Labs/MCP-Shield.git && cd MCP-Shield
 pip install -e ".[dev]"
 git worktree add ../MCP-Shield-tests tests          # the suite, beside the code
 cd ../MCP-Shield-tests

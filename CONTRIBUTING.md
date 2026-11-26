@@ -27,7 +27,7 @@ format that guide describes. The team's adaptive red-team set is not published.
 ## Development setup
 
 ```bash
-git clone https://github.com/Dummie-Labs/MCP-Shield.git && cd MCP-Shield
+git clone https://github.com/DUME-Labs/MCP-Shield.git && cd MCP-Shield
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 git worktree add ../MCP-Shield-tests tests

@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]  # F:\MCP-Shield
 PROJECT, TESTS, DOCS = ROOT / "project", ROOT / "Tests", ROOT / "docs"
 OUT = ROOT / "release-branches"
 BASE_PAPER = "https://arxiv.org/abs/2601.17549"
-REPO = "https://github.com/Dummie-Labs/MCP-Shield"
+REPO = "https://github.com/DUME-Labs/MCP-Shield"
 SKIP = shutil.ignore_patterns(
     "__pycache__",
     "*.pyc",
@@ -288,7 +288,7 @@ TESTS_README = """# MCP-Shield — test suite
 This branch holds the tests; the code is on `main`. Check `main` out next to it:
 
 ```bash
-git clone https://github.com/Dummie-Labs/MCP-Shield.git MCP-Shield
+git clone https://github.com/DUME-Labs/MCP-Shield.git MCP-Shield
 git -C MCP-Shield worktree add ../Tests tests
 pip install -e "./MCP-Shield[dev]"
 cd Tests && MCP_SHIELD_PROJECT=../MCP-Shield python -m pytest

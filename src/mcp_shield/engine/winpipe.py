@@ -19,11 +19,11 @@ from collections.abc import Awaitable, Callable
 from ctypes import wintypes
 from typing import Any
 
-if sys.platform != "win32":  # pragma: no cover
-    raise ImportError("winpipe is Windows-only")
+# Windows-only: imported only on Windows, and this form makes type checkers skip the module elsewhere.
+assert sys.platform == "win32", "winpipe is Windows-only"
 
-import _winapi  # type: ignore[import-not-found]
-from asyncio import windows_events, windows_utils
+import _winapi  # type: ignore[import-not-found]  # noqa: E402 - after the platform guard on purpose
+from asyncio import windows_events, windows_utils  # noqa: E402
 
 log = logging.getLogger(__name__)
 
