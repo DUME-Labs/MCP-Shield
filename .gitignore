@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# tools
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# training outputs and data — never committed (licences, size, privacy)
+training/data/
+training/raw/
+training/heldout/
+training/runs/
+training/models/
+training/loso/
+training/dataset.toml
+*.onnx
+*.safetensors
+*.bin
+
+# local state
+*.db
+*.db-wal
+*.db-shm

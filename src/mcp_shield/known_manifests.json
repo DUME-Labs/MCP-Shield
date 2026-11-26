@@ -1,0 +1,5 @@
+{
+  "_comment": "Published SHA-256 pins (canonical tool/prompt/template definitions, see pinning.def_hash) for reference MCP servers. A first listing whose items all appear in one manifest is accepted without the manual review step. Regenerate with `python scripts/pin_reference_servers.py` against a pinned server release.",
+  "version": 1,
+  "manifests": {}
+}

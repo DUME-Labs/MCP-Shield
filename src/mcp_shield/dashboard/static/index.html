@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP-Shield</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">MS</span><span>MCP-Shield</span><span class="ver" id="version"></span></div>
+  <div class="pills" id="pills"></div>
+  <div class="spacer"></div>
+  <span class="live" id="live" title="Live feed">offline</span>
+  <button class="ghost" id="theme" type="button" aria-label="Toggle light or dark theme">Theme</button>
+</header>
+<div class="layout">
+  <nav class="side" aria-label="Dashboard sections">
+    <button type="button" data-tab="traffic" aria-current="page">Live traffic</button>
+    <button type="button" data-tab="flagged">Flagged requests <span class="count" id="flag-count"></span></button>
+    <button type="button" data-tab="pins">Capability pins</button>
+    <button type="button" data-tab="sessions">Sessions</button>
+    <button type="button" data-tab="engine">Engine</button>
+  </nav>
+  <main>
+    <section class="tab" id="tab-traffic" data-active="true">
+      <h1>Live traffic</h1>
+      <p class="sub">Every decision the engine makes, newest first. Allowed results show per-tier latency.</p>
+      <table class="grid"><thead><tr><th>Time</th><th>Verdict</th><th>Kind</th><th>Server</th><th>Tool / method</th><th>Tier 2</th><th>Tier 3</th><th>Ref</th></tr></thead>
+      <tbody id="traffic-body"></tbody></table>
+    </section>
+    <section class="tab" id="tab-flagged">
+      <h1>Flagged requests</h1>
+      <p class="sub">Blocked, held, abstained and quarantined items. Search by the reference ID the host's error shows.</p>
+      <div class="toolbar"><input id="flag-search" type="search" placeholder="Search ref, tool, server or reason" aria-label="Search flagged requests"></div>
+      <div class="split">
+        <table class="grid"><thead><tr><th>Time</th><th>Verdict</th><th>Kind</th><th>Server</th><th>Tool</th><th>Ref</th></tr></thead>
+        <tbody id="flag-body"></tbody></table>
+        <aside class="detail" id="flag-detail"><p class="muted">Select an item to see why it was flagged.</p></aside>
+      </div>
+    </section>
+    <section class="tab" id="tab-pins">
+      <h1>Capability pins</h1>
+      <p class="sub">Pinned tool, prompt and template definitions per server. Re-pinning requires confirmation.</p>
+      <div class="toolbar"><select id="pin-server" aria-label="Server"></select><button type="button" id="pin-accept" class="primary">Accept current manifest…</button><button type="button" id="pin-release" class="ghost">Release probe quarantine</button></div>
+      <p id="pin-status" class="muted"></p>
+      <table class="grid"><thead><tr><th>Kind</th><th>Name</th><th>Privilege</th><th>State</th><th>Scan</th><th>Exposed</th></tr></thead>
+      <tbody id="pin-body"></tbody></table>
+      <div id="pin-diff"></div>
+    </section>
+    <section class="tab" id="tab-sessions">
+      <h1>Sessions</h1>
+      <p class="sub">Taint state per host session. A session is tainted while it holds at least one live record.</p>
+      <table class="grid"><thead><tr><th>Client</th><th>Host</th><th>Policy</th><th>Tainted</th><th>Sources</th><th>Last seen</th><th></th></tr></thead>
+      <tbody id="session-body"></tbody></table>
+    </section>
+    <section class="tab" id="tab-engine">
+      <h1>Engine</h1>
+      <pre class="mono box" id="engine-status"></pre>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

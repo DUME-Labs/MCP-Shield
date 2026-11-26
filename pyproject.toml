@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-shield-llm"
+dynamic = ["version"]
+description = "Semantic LLM firewall for the Model Context Protocol: a local proxy that inspects MCP traffic in both directions."
+readme = "OVERVIEW.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+    { name = "Rishikesh Varma" },
+    { name = "Vineel Yerubandi" },
+    { name = "Shivatarak Reddy" },
+    { name = "ES Heron" },
+]
+keywords = ["mcp", "model-context-protocol", "prompt-injection", "llm-security", "firewall", "proxy"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+]
+# The CPU wheel of ONNX Runtime is the dependency; an accelerator wheel is a swap that
+# `mcp-shield doctor` prints, never an extra (the ONNX Runtime wheels are mutually exclusive).
+dependencies = [
+    "onnxruntime>=1.17",
+    "tokenizers>=0.15",
+    "numpy>=1.24",
+    "platformdirs>=4.0",
+    "httpx>=0.27",
+    "starlette>=0.37",
+    "uvicorn>=0.29",
+    "websockets>=12",
+    "jsonschema>=4.18",
+    "huggingface_hub>=0.23",
+    "psutil>=5.9",
+    "referencing>=0.28",
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+fast = ["uvloop>=0.19; sys_platform != 'win32'"]
+train = ["torch>=2.2", "transformers>=4.40", "onnx>=1.15", "datasets>=2.18", "scikit-learn>=1.3"]
+dev = ["pytest>=8", "onnx>=1.15", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+mcp-shield = "mcp_shield.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "mcp_shield._version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mcp_shield = ["host_rules.md", "known_manifests.json", "py.typed", "dashboard/static/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src", "training"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = ["S101", "S603", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# shuffling and sampling are not cryptography; "[UNK]" / "[PAD]" are token names, not passwords
+"training/**" = ["S311", "S106"]
+# embedded workflow / Markdown templates are kept verbatim
+"scripts/stage_branches.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_ignores = false
+ignore_missing_imports = true

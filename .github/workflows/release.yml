@@ -1,0 +1,22 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build the wheel and sdist (one universal wheel for Windows, macOS and Linux)
+        run: |
+          python -m pip install build .
+          python scripts/build_release.py --out dist --verify
+      - name: Attach them to a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "MCP-Shield $GITHUB_REF_NAME" --generate-notes --prerelease

@@ -1,0 +1,12 @@
+# Changes to these paths need a code owner's review once branch protection requires it.
+# Add teammates' GitHub handles after the existing one, separated by spaces.
+
+/docs/Host\ Prompt\ Rules.md        @rishikeshvarma
+/src/mcp_shield/host_rules.md       @rishikeshvarma
+/src/mcp_shield/cascade/            @rishikeshvarma
+/src/mcp_shield/engine/             @rishikeshvarma
+/src/mcp_shield/proxy/              @rishikeshvarma
+/src/mcp_shield/taint.py            @rishikeshvarma
+/src/mcp_shield/pinning.py          @rishikeshvarma
+/src/mcp_shield/dashboard/          @rishikeshvarma
+/.github/                           @rishikeshvarma

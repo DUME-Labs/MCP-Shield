@@ -1,0 +1,57 @@
+# Dataset manifest for `python -m mcp_shield_train ingest --manifest dataset.toml`
+# Copy this file, point each [[sources]] entry at a file the team collected, and run it.
+# Paths are relative to this file. Labels: benign | indirect_injection | command_injection | description_poisoning
+
+[dataset]
+name = "mcp-shield-clf-v1"
+output = "data/v1"            # train.jsonl, val.jsonl, test_internal.jsonl and dataset_card.json go here
+seed = 1234
+augment_copies = 1            # tool-name / key / prefix variations of each TRAIN record (0 = off)
+dedup_threshold = 0.8         # MinHash Jaccard above which two texts of the same label count as duplicates
+group_threshold = 0.5         # pairs at least this similar (any labels, e.g. attack + benign twin) share a split side
+
+# --- a file with a label column and its own label names --------------------------------
+[[sources]]
+name = "injecagent"
+path = "raw/injecagent.jsonl" # .jsonl, .json, .csv, .tsv or .parquet
+licence = "MIT"
+text = "attacker_instruction" # column (or dotted path into nested JSON) holding the segment
+label = "label"
+label_map = { "attack" = "indirect_injection", "clean" = "benign" }
+group = "case_id"             # rows of one document share it; default = a hash of the text
+server = "web"                # prefix values when the file has no context column…
+tool = "fetch"
+field = "content[0].text"
+# server_column = "server"    # …or take them from columns
+
+# --- a file that is all one class -----------------------------------------------------------
+[[sources]]
+name = "captured-benign-github"
+path = "raw/github_results.csv"
+licence = "own capture (sandbox accounts)"
+text = "result_text"
+fixed_label = "benign"
+hard_negative_column = "is_hard_negative"  # or hard_negative = true for the whole file
+server = "github"
+tool = "get_issue"
+
+# --- tool descriptions ----------------------------------------------------------------------
+[[sources]]
+name = "tool-descriptions"
+path = "raw/descriptions.jsonl"
+licence = "MIT (reference servers)"
+text = "description"
+label = "label"
+context = "context"           # a ready-made [server=… tool=… field=…] prefix column
+
+# --- held-out evaluation files: never trained on --------------------------------------------
+# Any pool text that also appears here is removed and counted in the dataset card.
+[[heldout]]
+name = "agentdojo"
+path = "heldout/agentdojo_injections.jsonl"
+text = "text"
+
+[[heldout]]
+name = "mcpsecbench"
+path = "heldout/mcpsecbench.jsonl"
+text = "payload"
