@@ -3,7 +3,7 @@
 This branch holds the tests; the code is on `main`. Check `main` out next to it:
 
 ```bash
-git clone https://github.com/Dummie-Labs/MCP-Shield.git MCP-Shield
+git clone https://github.com/DUME-Labs/MCP-Shield.git MCP-Shield
 git -C MCP-Shield worktree add ../Tests tests
 pip install -e "./MCP-Shield[dev]"
 cd Tests && MCP_SHIELD_PROJECT=../MCP-Shield python -m pytest

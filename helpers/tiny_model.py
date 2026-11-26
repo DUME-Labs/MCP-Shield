@@ -107,14 +107,12 @@ def _tokenizer_json(v: dict[str, int]) -> dict:
     }
 
 
-def _embedding(v: dict[str, int]) -> np.ndarray:
-    e = np.zeros((len(v), 4), dtype=np.float32)
-    for w in INDIRECT:
-        e[v[w], 1] = 4.0
-    for w in COMMAND:
-        e[v[w], 2] = 4.0
-    for w in POISON:
-        e[v[w], 3] = 4.0
+def _embedding(v: dict[str, int], num_labels: int = 4) -> np.ndarray:
+    """Per-word logit contributions; with two labels every attack word pushes the single attack class."""
+    e = np.zeros((len(v), num_labels), dtype=np.float32)
+    for words, column in ((INDIRECT, 1), (COMMAND, 2), (POISON, 3)):
+        for w in words:
+            e[v[w], column if num_labels == 4 else 1] = 4.0
     for w in MILD:
         e[v[w], 1] = 2.0
     return e
@@ -128,15 +126,18 @@ def build(
     block: float = 0.9,
     abstain: float = 0.6,
     with_checksums: bool = True,
+    num_labels: int = 4,
+    use_prefix: bool = True,
 ) -> Path:
+    """``num_labels=2`` and ``use_prefix=False`` build a model shaped like the interim classifier."""
     import onnx
     from onnx import TensorProto, helper, numpy_helper
 
     directory.mkdir(parents=True, exist_ok=True)
     v = vocab()
-    emb = _embedding(v)
-    proj = np.random.default_rng(7).normal(size=(4, 8)).astype(np.float32)
-    bias = np.array([2.0, 0.0, 0.0, 0.0], dtype=np.float32)
+    emb = _embedding(v, num_labels)
+    proj = np.random.default_rng(7).normal(size=(num_labels, 8)).astype(np.float32)
+    bias = np.array([2.0] + [0.0] * (num_labels - 1), dtype=np.float32)
     nodes = [
         helper.make_node("Gather", ["E", "input_ids"], ["tok"], axis=0),
         helper.make_node("Cast", ["attention_mask"], ["maskf"], to=TensorProto.FLOAT),
@@ -155,7 +156,7 @@ def build(
             helper.make_tensor_value_info("attention_mask", TensorProto.INT64, ["batch", "seq"]),
         ],
         [
-            helper.make_tensor_value_info("logits", TensorProto.FLOAT, ["batch", 4]),
+            helper.make_tensor_value_info("logits", TensorProto.FLOAT, ["batch", num_labels]),
             helper.make_tensor_value_info("pooled", TensorProto.FLOAT, ["batch", 8]),
         ],
         initializer=[
@@ -175,7 +176,8 @@ def build(
     meta = {
         "name": "mcp-shield-clf",
         "version": "tiny-test",
-        "labels": LABELS,
+        "labels": LABELS if num_labels == 4 else LABELS[:2],
+        "use_prefix": use_prefix,
         "temperature": 1.0,
         "max_length": max_length,
         "stride": stride,
