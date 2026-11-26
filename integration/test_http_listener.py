@@ -109,6 +109,7 @@ async def with_listener(classifier, shield_home, scenario, *, bearer=None):
     await engine.start()
     up_server, up_task = await engine._serve_uvicorn(upstream.app(), "127.0.0.1", up_port)
     await engine.open_listener(ListenerConfig("wiki", f"http://127.0.0.1:{up_port}/mcp", f"127.0.0.1:{port}", bearer))
+    upstream_client = engine.http_servers["wiki"][0].config.app.state.upstream_client
     try:
         async with httpx.AsyncClient(base_url=f"http://127.0.0.1:{port}", timeout=20) as client:
             await scenario(client, upstream, engine)
@@ -116,6 +117,7 @@ async def with_listener(classifier, shield_home, scenario, *, bearer=None):
         up_server.should_exit = True
         await asyncio.wait_for(up_task, 5)
         await engine.stop()
+    assert upstream_client.is_closed, "a stopped listener must close its connections to the upstream server"
 
 
 def test_listener(arun, classifier, shield_home):
