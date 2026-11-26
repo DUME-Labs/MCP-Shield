@@ -123,7 +123,12 @@ class Engine:
         reason = getattr(classifier, "reason", None)
         if reason:
             self.inspector.log.emit("unavailable", "info", reason=f"classifier unavailable — failing closed: {reason}")
-        self._ipc = await ipc.start_server(self._handle, self.address)
+        try:
+            self._ipc = await ipc.start_server(self._handle, self.address)
+        except BaseException:  # e.g. another engine already listens: release what this one opened
+            self.inspector.close()
+            self.inspector.store.close()
+            raise
         self.started = time.time()
         for listener in self.config.listeners:
             try:
@@ -164,8 +169,9 @@ class Engine:
 
     async def stop(self) -> None:
         if self._ipc is not None:
-            self._ipc.close()
+            await self._ipc.aclose()
             self._ipc = None
+        await asyncio.sleep(0)  # let handlers of just-accepted connections register their writers
         for writer in list(self._writers):
             writer.close()
         for writer in list(self._writers):

@@ -14,6 +14,7 @@ nothing and is refused. Frames are a 4-byte big-endian length followed by UTF-8 
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import hmac
 import json
@@ -106,7 +107,6 @@ MAX_SOCKET_PATH = 100
 
 
 def _short_socket_dir() -> Path:
-    import contextlib
     import stat
     import tempfile
 
@@ -158,11 +158,25 @@ async def client_handshake(reader: asyncio.StreamReader, writer: asyncio.StreamW
 
 
 class Listener:
-    def __init__(self, close: Callable[[], None]) -> None:
+    """A listening endpoint. ``aclose`` also closes connections it accepted but nobody handled yet."""
+
+    def __init__(self, close: Callable[[], None], server: asyncio.AbstractServer | None = None) -> None:
         self._close = close
+        self._server = server
 
     def close(self) -> None:
         self._close()
+
+    async def aclose(self) -> None:
+        self._close()
+        server = self._server
+        if server is None:
+            return
+        close_clients = getattr(server, "close_clients", None)  # Python 3.13+
+        if close_clients is not None:
+            close_clients()
+        with contextlib.suppress(Exception):
+            await asyncio.wait_for(server.wait_closed(), 2)
 
 
 async def start_server(handler: Handler, address: str | None = None) -> Listener:
@@ -176,6 +190,8 @@ async def start_server(handler: Handler, address: str | None = None) -> Listener
         try:
             _, w = await asyncio.open_unix_connection(str(path))
             w.close()
+            with contextlib.suppress(Exception):
+                await w.wait_closed()
             raise IPCError(f"an engine is already listening on {path}")
         except (ConnectionRefusedError, FileNotFoundError):
             path.unlink(missing_ok=True)
@@ -190,7 +206,7 @@ async def start_server(handler: Handler, address: str | None = None) -> Listener
         server.close()
         path.unlink(missing_ok=True)
 
-    return Listener(close)
+    return Listener(close, server)
 
 
 async def open_connection(address: str | None = None) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
