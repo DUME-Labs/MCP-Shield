@@ -31,7 +31,17 @@ Last updated: 26 Nov 2026 (Phase A1–A3 done).
 - [x] **A3** `doctor` self-test and `benchmark --suite latency` on the interim model, CPU fp32, Windows dev PC (26 Nov): Tier 1 0.01 ms; Tier 3 p50 / p95 — short 17 / 18 ms, ~512 tokens 123 / 134 ms, ~3,000 words 1.5 s; engine path for a ~200-word result 57 / 60 ms. Linux numbers come with D4.
 - [ ] **A4** Real hosts, by hand: Claude Desktop (Windows, macOS) and Cursor (all three) — `install`, first-contact quarantine, accept pins, reference servers (filesystem, GitHub), a planted injection blocked, a taint flow held, dashboard *Allow once*
 - [ ] **A5** Fix what A3 / A4 find
-- [ ] **A6** First pre-release: tag `v0.1.0.dev1` → GitHub release with the wheel
+- [ ] **A6** First release of Phase A: tag → GitHub release with the wheel, and the same version on PyPI (needs **R1**)
+
+## Phase W — project website (starts after A6 is released)
+
+Plan: the `website` branch's README. Served by GitHub Pages at https://dume-labs.github.io/MCP-Shield/.
+
+- [ ] **W0** `website` branch holding the plan only (staged 27 Nov)
+- [ ] **W1** Static site: what MCP-Shield is and what it stops (and does not), install commands for the visitor's OS — detected automatically, with manual OS tabs and copy buttons — and a showcase (request path, dashboard, host prompt rules, measured numbers, docs, paper, data guide)
+- [ ] **W2** Version, release notes and wheel link read from the GitHub release / PyPI, so commands never go stale
+- [ ] **W3** Pages deployment workflow on the `website` branch; Settings → Pages → Source: GitHub Actions, and Settings → Environments → `github-pages` → allow the `website` branch to deploy (only `main` may by default)
+- [ ] **W4** Checked on Windows, macOS, Linux and a phone; light and dark; keyboard and screen reader
 
 ## Phase B — data (team, from 27–28 Nov)
 
@@ -64,7 +74,7 @@ Last updated: 26 Nov 2026 (Phase A1–A3 done).
 ## Phase R — release (S1)
 
 - [x] GitHub release workflow (tag → wheel + sdist)
-- [ ] **R1** PyPI Trusted Publishing for `mcp-shield-llm`
+- [ ] **R1** PyPI Trusted Publishing for `mcp-shield-llm` (part of the Phase A release, A6)
 - [ ] **R2** Known manifests for the reference servers (`scripts/pin_reference_servers.py`)
 
 ## Stage 1E — enterprise basics
